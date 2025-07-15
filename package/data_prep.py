@@ -98,3 +98,38 @@ def clean_dataframe(df, outlier_cols=None):
     #     df_clean = df_clean[(df_clean[col] >= lower) & (df_clean[col] <= upper)]
 
     return df_clean
+
+def convert_fraud_column(df, column='fraud_reported'):
+    """
+    แปลงค่าคอลัมน์ 'fraud_reported' จาก 'Y' → 1 และ 'N' → 0
+    Parameters:
+        df (pd.DataFrame): DataFrame ที่ต้องการแปลง
+        column (str): ชื่อคอลัมน์ที่ต้องการแปลง
+    Returns:
+        pd.DataFrame: DataFrame ที่มีการแปลงค่าคอลัมน์เรียบร้อยแล้ว
+    """
+    df = df.copy()
+    df["fraud_reported"] = df["fraud_reported"].map({'Y': 1, 'N': 0})
+    return df
+
+def merge_model_results(df, result_df):
+    """
+    รวมคอลัมน์ผลลัพธ์จาก model (result_df) เข้ากับ df โดย:
+    - ใช้ df เป็นหลัก
+    - รวมเฉพาะคอลัมน์ที่มีใน result_df และอยู่ในรายการเป้าหมาย
+    Parameters:
+        df (pd.DataFrame): ข้อมูลต้นฉบับ
+        result_df (pd.DataFrame): ข้อมูลผลลัพธ์จาก model
+    Returns:
+        pd.DataFrame: DataFrame ใหม่ที่รวมผลลัพธ์เฉพาะคอลัมน์ที่ตรง
+    """
+    target_columns = ['mahalanobis_distance', 'anomaly', 'p_value', 'anomaly_pvalue']
+    available_columns = [col for col in target_columns if col in result_df.columns]
+
+    # เช็คว่า row ตรงกันไหม
+    if len(df) != len(result_df):
+        raise ValueError("จำนวนแถวของ df และ result_df ต้องเท่ากัน")
+
+    # รวมข้อมูล
+    df_merged = pd.concat([df.reset_index(drop=True), result_df[available_columns].reset_index(drop=True)], axis=1)
+    return df_merged
