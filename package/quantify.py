@@ -4,7 +4,7 @@ from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 
-def evaluate_binary_classification(df, y_pred=None, true_col='true', beta_list=[1, 0.5]):
+def quantify_binary_classification(df, y_pred=None, true_col='true', beta_list=[1, 0.5]):
     """
     ประเมินผล classification: precision, recall, f1, f-beta และ confusion matrix
 
