@@ -48,15 +48,11 @@ def check_duplicates(df, subset=None, keep='first', show_sample=True):
     return result
 
 
-def filter_and_convert_columns(df):
+def filter_and_convert_columns(df,int_cols=None, float_cols=None):
     # แยกคอลัมน์ตามชนิดข้อมูลที่ต้องการ
-    int_columns = [
-        'months_as_customer',
-        'injury_claim',
-        'property_claim', 'vehicle_claim'
-    ]
+    int_columns = int_cols or []
 
-    float_columns = ['policy_annual_premium']
+    float_columns = float_cols or []
 
     all_columns = int_columns + float_columns
 
@@ -99,7 +95,7 @@ def clean_dataframe(df, outlier_cols=None):
 
     return df_clean
 
-def convert_fraud_column(df, column='fraud_reported'):
+def convert_fraud_column(df,col):
     """
     แปลงค่าคอลัมน์ 'fraud_reported' จาก 'Y' → 1 และ 'N' → 0
     Parameters:
@@ -109,10 +105,10 @@ def convert_fraud_column(df, column='fraud_reported'):
         pd.DataFrame: DataFrame ที่มีการแปลงค่าคอลัมน์เรียบร้อยแล้ว
     """
     df = df.copy()
-    df["fraud_reported"] = df["fraud_reported"].map({'Y': 1, 'N': 0})
+    df[col] = df[col].map({'Y': 1, 'N': 0})
     return df
 
-def merge_model_results(df, result_df):
+def merge_model_results(df, result_df,cols):
     """
     รวมคอลัมน์ผลลัพธ์จาก model (result_df) เข้ากับ df โดย:
     - ใช้ df เป็นหลัก
@@ -123,7 +119,7 @@ def merge_model_results(df, result_df):
     Returns:
         pd.DataFrame: DataFrame ใหม่ที่รวมผลลัพธ์เฉพาะคอลัมน์ที่ตรง
     """
-    target_columns = ['mahalanobis_distance', 'anomaly', 'p_value', 'anomaly_pvalue']
+    target_columns = cols
     available_columns = [col for col in target_columns if col in result_df.columns]
 
     # เช็คว่า row ตรงกันไหม

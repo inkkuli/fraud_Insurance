@@ -40,7 +40,8 @@ def isolation_forest(df, contamination=0.05, n_estimators=100, max_samples='auto
 def evaluate_if_performance_with_best(
     df_input,
     df_true,
-    label_col='fraud_reported',
+    label_col,
+    anomaly_col,
     contamination_list=[0.01, 0.03, 0.05, 0.1],
     n_estimators_list=[50, 100, 200],
     max_samples_list=['auto', 0.6, 0.8, 1.0],
@@ -63,7 +64,7 @@ def evaluate_if_performance_with_best(
                         n_estimators=n_estimators,
                         max_samples=max_samples
                     )
-                    y_pred = result_df['anomaly']
+                    y_pred = result_df[anomaly_col]
                     tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
 
                     results.append({

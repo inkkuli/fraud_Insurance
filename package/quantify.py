@@ -4,7 +4,7 @@ from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 
-def quantify_binary_classification(df, y_pred=None, true_col='true', beta_list=[1, 0.5]):
+def quantify_binary_classification(df, y_pred,label_col ,beta_list=[1, 0.5]):
     """
     ประเมินผล classification: precision, recall, f1, f-beta และ confusion matrix
 
@@ -17,13 +17,8 @@ def quantify_binary_classification(df, y_pred=None, true_col='true', beta_list=[
     Returns:
         dict: ค่าประเมินทั้งหมด
     """
-    y_true = df["fraud_reported"].values
-    if y_pred is None:
-        if 'pred' not in df.columns:
-            raise ValueError("ต้องระบุ y_pred หรือให้ df มีคอลัมน์ชื่อ 'pred'")
-        y_pred = df['pred'].values
-    else:
-        y_pred = pd.Series(y_pred).values
+    y_true = df[label_col].values
+    y_pred = df[y_pred].values
 
     results = {
         "precision": precision_score(y_true, y_pred, zero_division=0),

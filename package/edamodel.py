@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 import pandas as pd
 
-def plot_pca_anomaly(result_df, anomaly_col='anomaly'):
+def plot_pca_anomaly(result_df, anomaly_col ,cols ):
     """
     สร้างกราฟ PCA 2D โดยเลือกฟีเจอร์หลัก และระบุคอลัมน์ที่ใช้แบ่งกลุ่ม anomaly
     Parameters:
@@ -11,11 +11,8 @@ def plot_pca_anomaly(result_df, anomaly_col='anomaly'):
         anomaly_col (str): ชื่อคอลัมน์ที่ใช้แบ่งสี (default = 'anomaly')
     """
     # เลือกฟีเจอร์สำหรับ PCA
-    feature_cols = [
-        'months_as_customer',
-        'injury_claim', 'property_claim', 'vehicle_claim',
-        'policy_annual_premium'
-    ]
+    feature_cols = cols or []
+    anomaly_col= anomaly_col or []
 
     # ตรวจสอบคอลัมน์
     missing = [col for col in feature_cols + [anomaly_col] if col not in result_df.columns]
@@ -37,16 +34,16 @@ def plot_pca_anomaly(result_df, anomaly_col='anomaly'):
     pca_df = pd.DataFrame({
         'PC1': X_pca[:, 0],
         'PC2': X_pca[:, 1],
-        'anomaly': y
+        anomaly_col: y
     })
 
     # Plot
     plt.figure(figsize=(8, 6))
-    unique_labels = sorted(pca_df['anomaly'].unique())
+    unique_labels = sorted(pca_df[anomaly_col].unique())
     colors = plt.cm.Set1.colors  # ใช้ color map
 
     for i, val in enumerate(unique_labels):
-        subset = pca_df[pca_df['anomaly'] == val]
+        subset = pca_df[pca_df[anomaly_col] == val]
         plt.scatter(subset['PC1'], subset['PC2'],
                     c=[colors[i % len(colors)]], label=str(val), alpha=0.6, edgecolor='k')
 

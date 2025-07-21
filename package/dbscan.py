@@ -82,7 +82,8 @@ def dbscan_anomaly(df, eps=0.5, min_samples=5, cols=None):
 def evaluate_dbscan_performance_with_best(
     df_input,
     df_true,
-    label_col='fraud_reported',
+    label_col,
+    pred_col,
     eps_range=np.arange(0.1, 1.1, 0.1),
     min_samples_range=range(3, 11),
     beta=0.5,
@@ -97,7 +98,7 @@ def evaluate_dbscan_performance_with_best(
         for min_samples in min_samples_range:
             try:
                 result_df = dbscan_anomaly(df_input, eps=eps, min_samples=min_samples, cols=cols)
-                y_pred = result_df['anomaly']
+                y_pred = result_df[pred_col]
                 tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
                 results.append({
                     'model' : f'dbscann | eps : {round(eps, 3)} , min_sample : {min_samples}',

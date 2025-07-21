@@ -160,7 +160,7 @@ def robust_mahalanobis_anomaly(X_input, threshold_percentile=0.8, return_distanc
         return result_df
 
 
-def add_pvalue_to_result(result_df, alpha=0.05):
+def add_pvalue_to_result(result_df,distance_col,anomaly_col, alpha=0.05):
     """
     เพิ่ม p-value และ anomaly_pvalue โดยไม่ต้องระบุ n_features
     จะตรวจหา df อัตโนมัติจากคอลัมน์ใน result_df
@@ -172,14 +172,14 @@ def add_pvalue_to_result(result_df, alpha=0.05):
     Returns:
         result_df: DataFrame เดิมที่เพิ่ม 'p_value' และ 'anomaly_pvalue'
     """
-    if "mahalanobis_distance" not in result_df.columns:
+    if distance_col not in result_df.columns:
         raise ValueError("Column 'mahalanobis_distance' not found in input DataFrame.")
 
     # คำนวณ d^2
-    d_squared = result_df["mahalanobis_distance"] ** 2
+    d_squared = result_df[distance_col] ** 2
 
     # หา feature columns = all - known outputs
-    ignore_cols = {"mahalanobis_distance", "anomaly", "p_value", "anomaly_pvalue"}
+    ignore_cols = { distance_col , anomaly_col , "p_value", "anomaly_pvalue"}
     feature_cols = [col for col in result_df.columns if col not in ignore_cols]
     df = len(feature_cols)
 
@@ -194,7 +194,10 @@ def add_pvalue_to_result(result_df, alpha=0.05):
 def evaluate_percentile_alpha_performance_with_best(
     X_input,
     df_true,
-    label_col='fraud_reported',
+    label_col,
+    anomaly_col=None,
+    p_value_col=None,
+    distance_col=None, 
     percentile=np.arange(0.90, 0.991, 0.01),
     alphas=np.arange(0.01, 0.201, 0.025),
     beta=0.5 
@@ -207,7 +210,7 @@ def evaluate_percentile_alpha_performance_with_best(
     percentile_rows = []
     for q in percentile:
         result_df = robust_mahalanobis_anomaly(X_input, threshold_percentile=q)
-        y_pred = result_df['anomaly']
+        y_pred = result_df[anomaly_col]
 
         # Confusion matrix
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
@@ -227,11 +230,12 @@ def evaluate_percentile_alpha_performance_with_best(
 
     # สำหรับ alpha part (fixed percentile = 0.975)
     result_df = robust_mahalanobis_anomaly(X_input, threshold_percentile=0.975)
-    result_df = add_pvalue_to_result(result_df, alpha=0.05)
+    result_df = add_pvalue_to_result(result_df,distance_col=distance_col,anomaly_col=anomaly_col, alpha=0.05) #แก้
+    
 
     alpha_rows = []
     for alpha in alphas:
-        y_pred = (result_df["p_value"] < alpha).astype(int)
+        y_pred = (result_df[p_value_col] < alpha).astype(int)
         tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
 
         alpha_rows.append({
