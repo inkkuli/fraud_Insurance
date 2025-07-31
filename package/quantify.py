@@ -1,8 +1,5 @@
 from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix, fbeta_score
-import pandas as pd
-from xgboost import XGBClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report
+
 
 def quantify_binary_classification(df, y_pred,label_col ,beta_list=[1, 0.5]):
     """
